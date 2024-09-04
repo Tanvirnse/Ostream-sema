@@ -1,0 +1,103 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Upgrade the server
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install curl
+      apt:
+        name: curl
+        state: present
+
+    - name: Install Ookla Speedtest CLI repository
+      shell: curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | bash
+
+    - name: Install Speedtest CLI
+      apt:
+        name: speedtest
+        state: present
+
+    - name: Test bandwidth with Speedtest and save result
+      command: speedtest --server-id 20144 --output text
+      register: speedtest_result
+
+    - name: Save Speedtest result to file
+      copy:
+        content: "{{ speedtest_result.stdout }}"
+        dest: /opt/speedtest_result.txt
+
+    - name: Install fio
+      apt:
+        name: fio
+        state: present
+
+    - name: Test read and write speed with fio and save result
+      command: fio --name=randwrite --ioengine=libaio --rw=randwrite --bs=4k --numjobs=4 --size=1G --runtime=60 --group_reporting
+      register: fio_result
+
+    - name: Save fio result to file
+      copy:
+        content: "{{ fio_result.stdout }}"
+        dest: /opt/fio_result.txt
+
+    - name: Install Telegraf
+      apt:
+        name: telegraf
+        state: present
+
+    - name: Copy telegraf-ostream.conf.j2 content to telegraf.conf
+      template:
+        src: telegraf-ostream.conf.j2
+        dest: /etc/telegraf/telegraf.conf
+
+    - name: Restart Telegraf
+      systemd:
+        name: telegraf
+        state: restarted
+
+    - name: Install Logstash GPG key
+      apt_key:
+        url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+        state: present
+
+    - name: Install apt-transport-https
+      apt:
+        name: apt-transport-https
+        state: present
+
+    - name: Add Logstash repository
+      apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/elastic-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main"
+        state: present
+
+    - name: Install Logstash
+      apt:
+        name: logstash
+        state: present
+        update_cache: yes
+
+    - name: Copy logstash-ostream.conf.j2 content to ostream.conf
+      template:
+        src: logstash-ostream.conf.j2
+        dest: /etc/logstash/conf.d/ostream.conf
+
+    - name: Create __udvash-unmesh_com.ca-bundle file in /etc/logstash
+      template:
+        src: ostream-cert.conf.j2
+        dest: /etc/logstash/__udvash-unmesh_com.ca-bundle
+
+    - name: Install traceroute
+      apt:
+        name: traceroute
+        state: present
+
+    - name: Copy sysctl.conf.j2 content to /etc/sysctl.conf
+      template:
+        src: sysctl.conf.j2
+        dest: /etc/sysctl.conf
+
+    - name: Refresh the kernel parameters
+      command: sysctl -p
