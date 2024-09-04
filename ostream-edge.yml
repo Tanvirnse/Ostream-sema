@@ -27,8 +27,8 @@
         state: present
 
     - name: Test read and write speed with fio and save result
-      shell: fio --ioengine=libaio --direct=1 --randrepeat=0 --refill_buffers --end_fsync=1 --rwmixread=70 --filename=/home/onnorokom/.kdiskmark.tmp --name=write --size=1024m --bs=4k --rw=write --iodepth=32 --numjobs=16 --group_reporting --time_based --runtime=300 > /opt/fio_test_result.txt
-      shell: fio --ioengine=libaio --direct=1 --randrepeat=0 --refill_buffers --end_fsync=1 --rwmixread=70 --filename=/home/onnorokom/.kdiskmark.tmp --name=read --size=1024m --bs=4k --rw=read --iodepth=32 --numjobs=16 --group_reporting --time_based --runtime=300 > /opt/fio_test_result.txt
+      shell: fio --ioengine=libaio --direct=1 --randrepeat=0 --refill_buffers --end_fsync=1 --rwmixread=70 --filename=/home/onnorokom/.kdiskmark.tmp --name=write --size=1024m --bs=4k --rw=write --iodepth=32 --numjobs=16 --group_reporting --time_based --runtime=300 > /opt/fio_write_test_result.txt
+      shell: fio --ioengine=libaio --direct=1 --randrepeat=0 --refill_buffers --end_fsync=1 --rwmixread=70 --filename=/home/onnorokom/.kdiskmark.tmp --name=read --size=1024m --bs=4k --rw=read --iodepth=32 --numjobs=16 --group_reporting --time_based --runtime=300 > /opt/fio_read_test_result.txt
 
     - name: Install Telegraf
       apt:
