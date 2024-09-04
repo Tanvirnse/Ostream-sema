@@ -16,9 +16,7 @@
       shell: curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | bash
 
     - name: Install Speedtest CLI
-      apt:
-        name: speedtest
-        state: present
+      shell: sudo apt-get install speedtest
 
     - name: Test bandwidth with Speedtest and save result
       command: speedtest --server-id 20144 --output text
