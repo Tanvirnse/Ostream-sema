@@ -19,13 +19,7 @@
       shell: sudo apt-get install speedtest
 
     - name: Test bandwidth with Speedtest and save result
-      command: speedtest --server-id 20144 --output text
-      register: speedtest_result
-
-    - name: Save Speedtest result to file
-      copy:
-        content: "{{ speedtest_result.stdout }}"
-        dest: /opt/speedtest_result.txt
+      shell: speedtest --server-id 20144 > /opt/speedtest_result.txt   
 
     - name: Install fio
       apt:
@@ -33,13 +27,8 @@
         state: present
 
     - name: Test read and write speed with fio and save result
-      command: fio --name=randwrite --ioengine=libaio --rw=randwrite --bs=4k --numjobs=4 --size=1G --runtime=60 --group_reporting
-      register: fio_result
-
-    - name: Save fio result to file
-      copy:
-        content: "{{ fio_result.stdout }}"
-        dest: /opt/fio_result.txt
+      shell: fio --ioengine=libaio --direct=1 --randrepeat=0 --refill_buffers --end_fsync=1 --rwmixread=70 --filename=/home/onnorokom/.kdiskmark.tmp --name=write --size=1024m --bs=4k --rw=write --iodepth=32 --numjobs=16 --group_reporting --time_based --runtime=300 > /opt/fio_test_result.txt
+      shell: fio --ioengine=libaio --direct=1 --randrepeat=0 --refill_buffers --end_fsync=1 --rwmixread=70 --filename=/home/onnorokom/.kdiskmark.tmp --name=read --size=1024m --bs=4k --rw=read --iodepth=32 --numjobs=16 --group_reporting --time_based --runtime=300 > /opt/fio_test_result.txt
 
     - name: Install Telegraf
       apt:
