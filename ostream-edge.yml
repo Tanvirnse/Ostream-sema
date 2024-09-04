@@ -18,14 +18,16 @@
     - name: Install Speedtest CLI
       shell: sudo apt-get install speedtest
 
-    - name: Test bandwidth with Speedtest and save result
+   - name: Test bandwidth with Speedtest and save result
       command: speedtest --server-id 20144 --output text
       register: speedtest_result
+      when: speedtest_installation.rc == 0
 
     - name: Save Speedtest result to file
       copy:
         content: "{{ speedtest_result.stdout }}"
         dest: /opt/speedtest_result.txt
+      when: speedtest_result is defined
 
     - name: Install fio
       apt:
