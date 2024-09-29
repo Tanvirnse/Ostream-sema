@@ -1,0 +1,37 @@
+---
+- name: Configure Telegraf and create openport.sh script
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: Ensure /usr/local/bin directory exists
+      file:
+        path: /usr/local/bin
+        state: directory
+        mode: '0755'
+
+    - name: Copy input.exec configuration to telegraf.conf
+      blockinfile:
+        path: /etc/telegraf/telegraf.conf
+        block: |
+          [[inputs.exec]]
+            commands = ["bash /usr/local/bin/openport.sh"]
+            #timeout = "5s"
+            name_override = "OpenPort"
+            data_format = "value"
+            data_type = "integer"
+        insertafter: EOF
+
+    - name: Create openport.sh script
+      copy:
+        dest: /usr/local/bin/openport.sh
+        content: |
+          #!/bin/sh
+          ss -tn src :443 | wc -l
+        mode: '0755'
+
+    - name: Restart Telegraf service
+      systemd:
+        name: telegraf
+        state: restarted
+        enabled: yes
