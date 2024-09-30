@@ -1,0 +1,17 @@
+---
+- name: Manage openport.sh script
+  hosts: all
+  become: yes
+  tasks:
+    - name: Remove existing openport.sh script
+      ansible.builtin.file:
+        path: /usr/local/bin/openport.sh
+        state: absent
+
+    - name: Create new openport.sh script
+      ansible.builtin.copy:
+        dest: /usr/local/bin/openport.sh
+        content: |
+          #!/bin/sh
+          ss -tn src :443 | awk 'NR>1' | wc -l
+        mode: '0755'
