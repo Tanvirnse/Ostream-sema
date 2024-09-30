@@ -27,7 +27,7 @@
         dest: /usr/local/bin/openport.sh
         content: |
           #!/bin/sh
-          ss -tn src :443 | wc -l
+          ss -tn src :443 | awk 'NR>1' | wc -l
         mode: '0755'
 
     - name: Restart Telegraf service
