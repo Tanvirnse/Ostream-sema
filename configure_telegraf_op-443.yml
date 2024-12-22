@@ -1,5 +1,5 @@
 ---
-- name: Configure Telegraf and create openport.sh script
+- name: Configure Telegraf and ensure openport.sh script exists
   hosts: all
   become: yes
   tasks:
@@ -10,7 +10,17 @@
         state: directory
         mode: '0755'
 
-    - name: Copy input.exec configuration to telegraf.conf
+    - name: Ensure openport.sh script exists with correct content
+      copy:
+        dest: /usr/local/bin/openport.sh
+        content: |
+          #!/bin/sh
+          ss -tn src :443 | awk 'NR>1' | wc -l
+        mode: '0755'
+        owner: root
+        group: root
+
+    - name: Add input.exec configuration to telegraf.conf
       blockinfile:
         path: /etc/telegraf/telegraf.conf
         block: |
@@ -21,16 +31,9 @@
             data_format = "value"
             data_type = "integer"
         insertafter: EOF
+        create: yes
 
-    - name: Create openport.sh script
-      copy:
-        dest: /usr/local/bin/openport.sh
-        content: |
-          #!/bin/sh
-          ss -tn src :443 | awk 'NR>1' | wc -l
-        mode: '0755'
-
-    - name: Restart Telegraf service
+    - name: Restart Telegraf service to apply changes
       systemd:
         name: telegraf
         state: restarted
